@@ -4,6 +4,5 @@ def saywav_to_file(saywav_result,wavfile):
 
     import base64
 
-    with open(wavfile, 'wb') as file_to_save:
-        decoded_image_data = base64.decodebytes(base64_message)
-        file_to_save.write(decoded_image_data)
+    with open(wavfile, 'wb') as file:
+        file.write(base64.decodebytes(base64_message))
