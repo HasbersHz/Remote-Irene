@@ -40,6 +40,4 @@ if __name__ == "__main__":
                     print("Ошибка: статус не 200")
             except Exception as e:
                 print("Ошибка связи с сервером (вероятно) или обработки результата", e)
-    cmd = input("VA CMD> ")
-
-
+        cmd = input("VA CMD> ")
