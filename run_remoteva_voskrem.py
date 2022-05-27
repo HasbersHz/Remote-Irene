@@ -14,9 +14,7 @@ version="1.3"
 
 # main options
 with open('options.json', 'r', encoding="utf-8") as f:
-    s = f.read(10000000)
-    f.close()
-saved_options = json.loads(s)
+    saved_options = json.loads(f.read())
 
 ttsFormat = saved_options["ttsFormat"] # "none" (TTS on server) or "saytxt" (TTS on client)
                     # or "saywav" (TTS on server to WAV, Wav played on client)
@@ -27,9 +25,7 @@ baseUrl = saved_options["baseUrl"] # server with Irene WEB api
 from urllib.parse import urlparse
 urlparsed = urlparse(baseUrl)
 
-if os.path.exists("error_connection.wav"):
-    pass
-else: # первый вызов, давайте получим файлы
+if not os.path.exists("error_connection.wav"):  # первый вызов, давайте получим файлы
     print("Получаем WAV-файлы, которые будут играться в случае ошибок...")
 
     r = requests.get(baseUrl+"ttsWav", params={"text": "Ошибка: потеряна связь с сервером"})
@@ -90,22 +86,22 @@ async def run_test():
                 if "text" in resj:
                     voice_input_str = resj["text"]
                     #print(restext)
-                    if voice_input_str != "" and voice_input_str != None:
+                    if voice_input_str:
                         print(voice_input_str)
 
                         try:
                             r = requests.get(baseUrl+"sendRawTxt", params={"rawtxt": voice_input_str, "returnFormat": ttsFormat})
-                            if r.text != "":
+                            if r.text:
                                 res = json.loads(r.text)
                                 if res != "NO_VA_NAME": # some cmd was run
-                                    if res != None and res != "": # there is some response to play
+                                    if res: # there is some response to play
                                         if "saytxt" in ttsFormatList:
                                             if "restxt" in res.keys():
                                                 ttsEngine.say(res["restxt"])
                                                 ttsEngine.runAndWait()
 
                                         if "saywav" in ttsFormatList:
-                                            play_wav.saywav_to_file(res,'tmpfile.wav')
+                                            play_wav.saywav_to_file(res, 'tmpfile.wav')
                                             mic_blocked = True
                                             try:
                                                 play_wav.play_wav('tmpfile.wav')
