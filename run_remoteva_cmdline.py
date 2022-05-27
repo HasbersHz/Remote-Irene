@@ -29,18 +29,14 @@ version="1.2"
 
 # main options
 with open('options.json', 'r', encoding="utf-8") as f:
-    s = f.read(10000000)
-    f.close()
-saved_options = json.loads(s)
+    saved_options = json.loads(f.read())
 
 ttsFormat = saved_options["ttsFormat"] # "none" (TTS on server) or "saytxt" (TTS on client)
                     # or "saywav" (TTS on server to WAV, Wav played on client)
 ttsFormatList = ttsFormat.split(",")
 baseUrl = saved_options["baseUrl"] # server with Irene WEB api
 
-if os.path.exists("error_connection.wav"):
-    pass
-else: # первый вызов, давайте получим файлы
+if not os.path.exists("error_connection.wav"):  # первый вызов, давайте получим файлы
     try:
         print("Получаем WAV-файлы, которые будут играться в случае ошибок...")
 
@@ -70,25 +66,22 @@ if "saytxt" in ttsFormatList:
 
 if __name__ == "__main__":
 
-        print("Remote Irene (Command line variation) v{0} started! ttsFormat={1}, baseUrl={2}".format(version,ttsFormat,baseUrl))
-        print("---------------------")
-        print("Введите команду для голосового помощника.")
-        print("Пример 'привет', 'брось кубик', 'exit'.")
-        while True:
-            cmd = input("VA CMD> ")
-            if cmd == "exit":
-                break
-
-            voice_input_str = cmd
-            if voice_input_str != "" and voice_input_str != None:
+        print("Remote Irene (Command line variation) v{0} started! ttsFormat={1}, baseUrl={2}".format(version,ttsFormat,baseUrl),
+              "---------------------",
+              "Введите команду для голосового помощника.",
+              "Пример 'привет', 'брось кубик', 'exit'.")
+        cmd = input("VA CMD> ")
+        while cmd not in ["exit", "q", "выход"]:
+            if cmd:
+                voice_input_str = cmd
                 print(voice_input_str)
 
                 try:
                     r = requests.get(baseUrl+"sendTxtCmd", params={"cmd": voice_input_str, "returnFormat": ttsFormat})
-                    if r.text != "":
+                    if r.text:
                         res = json.loads(r.text)
                         if res != "NO_VA_NAME": # some cmd was run
-                            if res != None and res != "": # there is some response to play
+                            if res: # there is some response to play
                                 if "saytxt" in ttsFormatList:
                                     if "restxt" in res.keys():
                                         if ttsInited:
@@ -106,7 +99,5 @@ if __name__ == "__main__":
                 except Exception as e:
                     play_wav.play_wav('error_processing.wav')
 
-            else:
-                #print("2",rec.PartialResult())
-                pass
+            cmd = input("VA CMD> ")
 
